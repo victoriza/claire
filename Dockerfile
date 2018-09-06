@@ -1,12 +1,12 @@
-FROM python:2-alpine3.6
+FROM golang:1.8-alpine as builder
 
-RUN mkdir -p /opt/yair/config/
+RUN apk --update add git;
+RUN go get -d github.com/optiopay/klar
+RUN go build ./src/github.com/optiopay/klar
 
-COPY requirements.txt /opt/yair/
-COPY yair.py /opt/yair/yair.py
-COPY config.yaml /opt/yair/config/config.yaml
+FROM alpine:3.8
 
-RUN pip install --no-cache-dir -r /opt/yair/requirements.txt
+RUN apk add --no-cache ca-certificates
+COPY --from=builder /go/klar /klar
 
-ENTRYPOINT ["/opt/yair/yair.py"]
-CMD ""
+ENTRYPOINT ["/klar"]

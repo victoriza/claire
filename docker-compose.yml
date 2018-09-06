@@ -24,8 +24,8 @@ services:
       - ./clair_config:/config
     command: [-config, /config/config.yaml]
 
-  clairctl:
-    container_name: clair_clairctl
+  klar:
+    container_name: klar
     build: .
     restart: unless-stopped
     links:
