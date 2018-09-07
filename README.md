@@ -61,16 +61,19 @@ in my case I decided to have Clair in AWS and run the scripts from Jenkins
 
 #### AWS Clair
 1) Spin Claire in an **EC2 instance**
-2) Add a Security Group with **TCP** ports **[6060-6161]** open
+2) Add a Security Group with **TCP** ports **[6060-6161]** open to your CI/CD instance
 3) Create a new Type A record Route53 to that machine IP
 
 #### On your CI/CD
 1) Clone the repo
 2) `docker build -t klar .`
-3) Update `dev.env` to point to the precious mentioned `record`
+3) Update `dev.env` to point to the previous mentioned `record`
 4) Now your CI/CD (Like Jenkins) can run `./check.sh [TAG]:[VERSION]` on every build
 
 ## FAQ
+
+### Add namespaces
+Modify /clair_config/config.yaml and rebuild Claire container
 
 ### Docker Registry fails
 
