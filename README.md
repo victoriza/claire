@@ -1,12 +1,18 @@
 # Claire Redfield
 
-This project aim is to provide with an *easy* way to check vulnerabilities in your Docker containers (private or public Docker registry) that can be easily integrated as part of your CI/CD in minutes.
- 
-## How it works
+This project aim is to provide with an **easy** way to check **vulnerabilities** in your Docker containers (private or public Docker registry) that can also be easily integrated as part of your CI/CD
 
-From the command line we can run vulnerability checks on containers, in this example we search for vulnerabilities on the Docker image Postgres 9.5.1 that runs on Debian8:
+**NOTE:** This is a personal and *WIP* repo.
+ 
+## How do I check vulnerabilities ? 
+
+From the command line we can run vulnerability checks on containers, 
+in this example we search for *vulnerabilities* on the Docker image 
+Postgres 9.5.1 that runs on Debian8
     
-    check.sh postgres:9.5.1
+run: `check.sh postgres:9.5.1`
+
+output:
     
     Got results from Clair API v3  
     Found 248 vulnerabilities  
@@ -28,8 +34,10 @@ From the command line we can run vulnerability checks on containers, in this exa
     The getNodeSize function in ext/rtree/rtree.c in SQLite through 3.19.3, as used in GDAL and other products, mishandles undersized RTree blobs in a crafted database, leading to a heap-based buffer over-read or possibly unspecified other impact.
     https://security-tracker.debian.org/tracker/CVE-2017-10989
     -----------------------------------------
+    ...
+    ...
 
-This project use three containers that run:
+This project use three containers:
 + Clair 
     + In regular intervals, Clair ingests vulnerability metadata from a configured set of sources and stores it in the database.
     + Clients use the Clair API to index their container images; this creates a list of _features_ present in the image and stores them in the database.
@@ -39,20 +47,28 @@ This project use three containers that run:
 + Klar
     + Allows us to easily interact with Clair API (v3)
 
-## How to use it (locally)
+## How to use Claire
 
 0) Clone the repo `git@github.com:victoriza/claire.git` , `cd claire`
-1) Start Clair `docker-compose -f ./docker-compose.yml up -d` (it may take up to 10 minutes to populate the DB)
+1) Run `docker-compose -f ./docker-compose.yml up -d` (it may take up to 10 minutes to populate the DB)
 2) Copy `dev.env.templ` to `dev.env` (and update it to match the needs of your env):
-3) Test (check Postgres 9.5.2 on Debian8 vulnerabilities) `docker run --env-file=dev.env klar postgres:9.5.2`
+3) Test it, run `./check.sh postgres:9.5.2`
 
-## How to use it CI/CD (AWS Setup "Hello World")
+## AWS Setup (Quick example)
 
-1) Spin Clair in an EC2 instance (See step 1)
-2) Add a Security Group with TCP ports [6060-6161] open
-3) Create a record Route53 to that machine IP
-4) Update `dev.env` to point to that IP
-5) Now your CI/CD (Like Jenkins) can run `docker run --env-file=dev.env klar [TAG]:[VERSION]` on every build
+Since Clair needs to populate the DB it's probably worth it to do not rebuild the env all the time, 
+in my case I decided to have Clair in AWS and run the scripts from Jenkins
+
+#### AWS Clair
+1) Spin Claire in an **EC2 instance**
+2) Add a Security Group with **TCP** ports **[6060-6161]** open
+3) Create a new Type A record Route53 to that machine IP
+
+#### On your CI/CD
+1) Clone the repo
+2) `docker build -t klar .`
+3) Update `dev.env` to point to the precious mentioned `record`
+4) Now your CI/CD (Like Jenkins) can run `./check.sh [TAG]:[VERSION]` on every build
 
 ## FAQ
 
@@ -66,15 +82,15 @@ In case you dockerize it, make sure to run
 You may need to adjust the `CLAIR_ADDR=localhost`from `dev.env`  
 In my case I have Clair running in a separate host.
 
-## Terminology
+### Terminology
 
-### Container
+#### Container
 
 - *Container* - the execution of an image
 - *Image* - a set of tarballs that contain the filesystem contents and run-time metadata of a container
 - *Layer* - one of the tarballs used in the composition of an image, often expressed as a filesystem delta from another layer
 
-### Specific to Clair
+#### Specific to Clair
 
 - *Ancestry* - the Clair-internal representation of an Image
 - *Feature* - anything that when present in a filesystem could be an indication of a *vulnerability* (e.g. the presence of a file or an installed software package)
@@ -82,7 +98,7 @@ In my case I have Clair running in a separate host.
 - *Vulnerability Source* (vulnsrc) - the component of Clair that tracks upstream vulnerability data and imports them into Clair's database
 - *Vulnerability Metadata Source* (vulnmdsrc) - the component of Clair that tracks upstream vulnerability metadata and associates them with vulnerabilities in Clair's database
 
-https://raw.githubusercontent.com/coreos/clair/master/Documentation/terminology.md
+https://github.com/coreos/clair/blob/master/Documentation/terminology.md
  
 ### Heavily based on:
 
